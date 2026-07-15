@@ -1,0 +1,30 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "RngService.Protos";
+
+package rng;
+
+service RngGenerator {
+  rpc PrepareRound (PrepareRoundRequest) returns (PrepareRoundResponse);
+
+  rpc PlayRound (PlayRoundRequest) returns (PlayRoundResponse);
+}
+
+message PrepareRoundRequest {}
+
+message PrepareRoundResponse {
+  string server_seed = 1;
+  string server_seed_hash = 2;
+}
+
+message PlayRoundRequest {
+  string server_seed = 1;
+  string client_seed = 2;
+  int32 nonce = 3;
+  int32 max_range = 4;
+}
+
+message PlayRoundResponse {
+  int32 result = 1;
+  string round_hash = 2;
+}
