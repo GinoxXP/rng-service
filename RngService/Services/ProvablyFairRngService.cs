@@ -21,16 +21,17 @@ public class ProvablyFairRngService : IRngService
         return (serverSeed, serverSeedHash);
     }
 
-    public int CalculateResult(string serverSeed, string clientSeed, int nonce, int maxRange)
+    public int CalculateResult(string serverSeed, string clientSeed, int nonce, int minRange, int maxRange)
     {
         var message = $"{clientSeed}:{nonce}";
-            
+        
         var roundHash = CalculateHmacSha256(serverSeed, message);
 
         var hexSubstring = roundHash.Substring(0, 5);
         var decimalValue = Convert.ToInt32(hexSubstring, 16);
 
-        return decimalValue % (maxRange + 1);
+        int range = maxRange - minRange + 1;
+        return minRange + (decimalValue % range);
     }
 
     public string CalculateHmacSha256(string serverSeed, string message)

@@ -38,6 +38,7 @@ public class RngGrpcService : RngGenerator.RngGeneratorBase
             request.ServerSeed,
             request.ClientSeed,
             request.Nonce,
+            request.MinRange,
             request.MaxRange
         );
 
