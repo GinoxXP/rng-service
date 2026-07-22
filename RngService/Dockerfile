@@ -2,7 +2,7 @@
 USER $APP_UID
 WORKDIR /app
 
-EXPOSE 50051
+EXPOSE 8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -21,6 +21,5 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-ENV DOTNET_URLS="http://+:50051"
 
 ENTRYPOINT ["dotnet", "RngService.dll"]
