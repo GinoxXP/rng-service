@@ -31,28 +31,28 @@ public class RngServiceNunitTests
         }
 
         [Theory]
-        [InlineData("test_server_seed_1", "client_abc", 1, 100)]
-        [InlineData("another_secret_seed", "player_xyz", 42, 10)]
+        [InlineData("test_server_seed_1", "client_abc", 1, 1, 6)]
+        [InlineData("another_secret_seed", "player_xyz", 42, 1,100)]
         public void CalculateResult_WithSameInputs_ShouldAlwaysReturnSameResult(
-            string serverSeed, string clientSeed, int nonce, int maxRange)
+            string serverSeed, string clientSeed, int nonce, int minRange, int maxRange)
         {
-            int result1 = _rngService.CalculateResult(serverSeed, clientSeed, nonce, maxRange);
-            int result2 = _rngService.CalculateResult(serverSeed, clientSeed, nonce, maxRange);
+            int result1 = _rngService.CalculateResult(serverSeed, clientSeed, nonce, minRange, maxRange);
+            int result2 = _rngService.CalculateResult(serverSeed, clientSeed, nonce, minRange, maxRange);
 
             Assert.Equal(result1, result2);
         }
 
         [Theory]
-        [InlineData(10)]
-        [InlineData(100)]
-        public void CalculateResult_ShouldNeverExceedMaxRange(int maxRange)
+        [InlineData(1, 10)]
+        [InlineData(1, 100)]
+        public void CalculateResult_ShouldNeverExceedMaxRange(int minRange, int maxRange)
         {
             for (int nonce = 1; nonce <= 1000; nonce++)
             {
                 var (serverSeed, _) = _rngService.GenerateServerSeed();
                 string clientSeed = $"client_seed_{nonce}";
 
-                int result = _rngService.CalculateResult(serverSeed, clientSeed, nonce, maxRange);
+                int result = _rngService.CalculateResult(serverSeed, clientSeed, nonce, minRange, maxRange);
                 
                 Assert.True(result >= 0 && result <= maxRange);
             }
