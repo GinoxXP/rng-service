@@ -7,7 +7,7 @@ package rng;
 service RngGenerator {
   rpc PrepareRound (PrepareRoundRequest) returns (PrepareRoundResponse);
 
-  rpc PlayRound (PlayRoundRequest) returns (PlayRoundResponse);
+  rpc RollDice (RollDiceRequest) returns (RollDiceResponse);
 }
 
 message PrepareRoundRequest {}
@@ -17,15 +17,17 @@ message PrepareRoundResponse {
   string server_seed_hash = 2;
 }
 
-message PlayRoundRequest {
+message RollDiceRequest {
   string server_seed = 1;
-  string client_seed = 2;
-  int32 nonce = 3;
-  int32 min_range = 4;
-  int32 max_range = 5;
+  string client_seed1 = 2;
+  string client_seed2 = 3;
+  int32 nonce = 4;
+  string step_tag = 5;
+  int32 dice_count = 6;
+  int32 dice_sides = 7;
 }
 
-message PlayRoundResponse {
-  int32 result = 1;
-  string round_hash = 2;
+message RollDiceResponse {
+  repeated int32 rolls = 1;
+  repeated string hmac_hashes = 2;
 }

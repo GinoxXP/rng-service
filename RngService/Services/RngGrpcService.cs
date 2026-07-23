@@ -27,30 +27,39 @@ public class RngGrpcService : RngGenerator.RngGeneratorBase
         });
     }
 
-    public override Task<PlayRoundResponse> PlayRound(PlayRoundRequest request, ServerCallContext context)
+    public override Task<RollDiceResponse> RollDice(RollDiceRequest request, ServerCallContext context)
     {
-        if (string.IsNullOrEmpty(request.ServerSeed) || string.IsNullOrEmpty(request.ClientSeed))
+        if (string.IsNullOrWhiteSpace(request.ServerSeed) ||
+            string.IsNullOrWhiteSpace(request.ClientSeed1) ||
+            string.IsNullOrWhiteSpace(request.ClientSeed2))
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "Seeds cannot be empty."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "ServerSeed and both ClientSeeds cannot be empty."));
         }
 
-        int result = _rngService.CalculateResult(
+        var diceCount = request.DiceCount > 0 ? request.DiceCount : 3;
+        var diceSides = request.DiceSides > 0 ? request.DiceSides : 6;
+        var stepTag = string.IsNullOrWhiteSpace(request.StepTag) ? "turn" : request.StepTag;
+
+        var rolls = _rngService.CalculateDiceRolls(
             request.ServerSeed,
-            request.ClientSeed,
+            request.ClientSeed1,
+            request.ClientSeed2,
             request.Nonce,
-            request.MinRange,
-            request.MaxRange
+            stepTag,
+            diceCount,
+            diceSides
         );
 
-        string roundHash = _rngService.CalculateHmacSha256(
-            request.ServerSeed,
-            $"{request.ClientSeed}:{request.Nonce}"
-        );
+        var response = new RollDiceResponse();
+        response.Rolls.AddRange(rolls);
 
-        return Task.FromResult(new PlayRoundResponse
+        for (var i = 0; i < diceCount; i++)
         {
-            Result = result,
-            RoundHash = roundHash
-        });
+            var message = $"{request.ClientSeed1}:{request.ClientSeed2}:{request.Nonce}:{stepTag}:die_{i}";
+            var hmacHex = _rngService.CalculateHmacSha256(request.ServerSeed, message);
+            response.HmacHashes.Add(hmacHex);
+        }
+
+        return Task.FromResult(response);
     }
 }
