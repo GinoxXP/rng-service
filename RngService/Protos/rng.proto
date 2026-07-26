@@ -1,8 +1,7 @@
 ﻿syntax = "proto3";
 
-option csharp_namespace = "RngService.Protos";
-
-package rng;
+package ginbet.rng_service.v1;
+option csharp_namespace = "Ginbet.RngService.V1";
 
 service RngGenerator {
   rpc PrepareRound (PrepareRoundRequest) returns (PrepareRoundResponse);

@@ -1,5 +1,5 @@
-﻿using Grpc.Core;
-using RngService.Protos;
+﻿using Ginbet.RngService.V1;
+using Grpc.Core;
 
 namespace RngService.Services;
 
