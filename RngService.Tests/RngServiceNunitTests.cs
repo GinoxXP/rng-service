@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Logging.Abstractions;
 using RngService.Services;
 
 namespace RngService.Tests;
@@ -10,7 +11,8 @@ public class RngServiceNunitTests
     
     public RngServiceNunitTests()
     {
-        _rngService = new ProvablyFairRngService();
+        var logger = NullLogger<ProvablyFairRngService>.Instance;
+        _rngService = new ProvablyFairRngService(logger);
     }
     
     [Fact]

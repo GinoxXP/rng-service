@@ -20,6 +20,8 @@ public class RngGrpcService : RngGenerator.RngGeneratorBase
     {
         var (serverSeed, serverSeedHash) = _rngService.GenerateServerSeed();
 
+        _logger.LogInformation("Prepare round with ServerSeedHash: {ServerSeedHash}", serverSeedHash);
+        
         return Task.FromResult(new PrepareRoundResponse
         {
             ServerSeed = serverSeed,
@@ -33,6 +35,7 @@ public class RngGrpcService : RngGenerator.RngGeneratorBase
             string.IsNullOrWhiteSpace(request.ClientSeed1) ||
             string.IsNullOrWhiteSpace(request.ClientSeed2))
         {
+            _logger.LogWarning("RollDice failed: ServerSeed or ClientSeeds are missing.");
             throw new RpcException(new Status(StatusCode.InvalidArgument, "ServerSeed and both ClientSeeds cannot be empty."));
         }
 
@@ -59,7 +62,17 @@ public class RngGrpcService : RngGenerator.RngGeneratorBase
             var hmacHex = _rngService.CalculateHmacSha256(request.ServerSeed, message);
             response.HmacHashes.Add(hmacHex);
         }
-
+        
+        _logger.LogInformation(
+            "Rolled {DiceCount} dice (Sides: {DiceSides}) for Nonce: {Nonce}, StepTag: {StepTag}. Rolls: [{Rolls}]. ClientSeed1: {ClientSeed1}",
+            diceCount,
+            diceSides,
+            request.Nonce,
+            stepTag,
+            string.Join(", ", rolls),
+            request.ClientSeed1
+        );
+        
         return Task.FromResult(response);
     }
 }
