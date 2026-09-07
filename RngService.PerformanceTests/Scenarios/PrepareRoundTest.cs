@@ -1,4 +1,5 @@
 ﻿using Ginbet.RngService.V1;
+using Grpc.Core;
 using Grpc.Net.Client;
 using NBomber.Contracts;
 using NBomber.CSharp;
@@ -11,7 +12,6 @@ public static class PrepareRoundTest
     {
         const int channelCount = 4;
         var channels = new GrpcChannel[channelCount];
-        
         var clients = new RngGenerator.RngGeneratorClient[channelCount];
 
         return Scenario.Create("rng_prepare_round_scenario", async context =>
@@ -21,19 +21,25 @@ public static class PrepareRoundTest
 
             try
             {
-                var response = await client.PrepareRoundAsync(new PrepareRoundRequest(),
-                    cancellationToken: context.ScenarioCancellationToken);
+                var response = await client.PrepareRoundAsync(
+                    new PrepareRoundRequest(),
+                    cancellationToken: context.ScenarioCancellationToken
+                );
 
                 return Response.Ok(sizeBytes: response.CalculateSize());
             }
-            catch (Exception e)
+            catch (RpcException ex)
             {
-                return Response.Fail(statusCode: "InternalError");
+                return Response.Fail(statusCode: ex.StatusCode.ToString(), message: ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return Response.Fail(statusCode: "InternalError", message: ex.Message);
             }
         })
         .WithInit(async context =>
         {
-            for (int i = 0; i < channelCount; i++)
+            for (var i = 0; i < channelCount; i++)
             {
                 var socketsHandler = new SocketsHttpHandler
                 {
@@ -44,12 +50,17 @@ public static class PrepareRoundTest
 
                 channels[i] = GrpcChannel.ForAddress(url, new GrpcChannelOptions
                 {
-                    HttpHandler = socketsHandler,
-                    MaxReceiveMessageSize = 5 * 1024 * 1024,
-                    MaxSendMessageSize = 5 * 1024 * 1024
+                    HttpHandler = socketsHandler
                 });
 
                 clients[i] = new RngGenerator.RngGeneratorClient(channels[i]);
+            }
+        })
+        .WithClean(async context =>
+        {
+            foreach (var channel in channels)
+            {
+                channel?.Dispose();
             }
         })
         .WithLoadSimulations(
@@ -59,6 +70,5 @@ public static class PrepareRoundTest
             Simulation.Inject(rate: 1000, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(30)),
             Simulation.RampingInject(rate: 0, interval: TimeSpan.FromSeconds(1), during: TimeSpan.FromSeconds(15))
         );
-
     }
 }

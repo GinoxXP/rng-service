@@ -20,6 +20,7 @@ Console.WriteLine($"Running load test for RngService by URL: {config.ServiceUrl}
 var availableScenarios = new Dictionary<string, Func<ScenarioProps>>(StringComparer.OrdinalIgnoreCase)
 {
     ["PrepareRoundTest.Realistic"] = () => PrepareRoundTest.Realistic(config.ServiceUrl),
+    ["RollDiceTest.Realistic"] = () => RollDiceTest.Realistic(config.ServiceUrl),
 };
 
 var activeScenarioNames = config.Scenarios

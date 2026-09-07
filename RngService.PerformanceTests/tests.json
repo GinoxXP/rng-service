@@ -5,6 +5,10 @@
   "Scenarios": [
     {
       "Name": "PrepareRoundTest.Realistic",
+      "Enabled": false
+    },
+    {
+      "Name": "RollDiceTest.Realistic",
       "Enabled": true
     }
   ]
