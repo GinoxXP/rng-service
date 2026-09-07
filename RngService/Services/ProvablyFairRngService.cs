@@ -5,13 +5,6 @@ namespace RngService.Services;
 
 public class ProvablyFairRngService : IRngService
 {
-    private readonly ILogger<ProvablyFairRngService> _logger;
-
-    public ProvablyFairRngService(ILogger<ProvablyFairRngService> logger)
-    {
-        _logger = logger;
-    }
-    
     public (string ServerSeed, string ServerSeedHash) GenerateServerSeed()
     {
         var bytes = new byte[32];
@@ -21,8 +14,6 @@ public class ProvablyFairRngService : IRngService
         var serverSeed = Convert.ToHexString(bytes).ToLowerInvariant();
         var serverSeedHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(serverSeed))).ToLowerInvariant();
         
-        _logger.LogDebug("Generated new ServerSeedHash: {ServerSeedHash}", serverSeedHash);
-
         return (serverSeed, serverSeedHash);
     }
 
@@ -32,7 +23,6 @@ public class ProvablyFairRngService : IRngService
         var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
         var hmacHex = Convert.ToHexString(hash).ToLowerInvariant();
         
-        _logger.LogTrace("Calculated HMAC-SHA256 for Message: {Message} -> HMAC: {HmacHex}", message, hmacHex);
         return hmacHex;
     }
 
@@ -45,10 +35,6 @@ public class ProvablyFairRngService : IRngService
         int diceCount = 3, 
         int diceSides = 6)
     {
-        _logger.LogDebug(
-            "Calculating {DiceCount} dice rolls (Sides: {DiceSides}) for Nonce: {Nonce}, StepTag: {StepTag}",
-            diceCount, diceSides, nonce, stepTag);
-        
         var rolls = new int[diceCount];
 
         for (var i = 0; i < diceCount; i++)
@@ -57,8 +43,6 @@ public class ProvablyFairRngService : IRngService
             var hmacHex = CalculateHmacSha256(serverSeed, message);
 
             rolls[i] = ConvertHashToRange(hmacHex, 1, diceSides);
-            
-            _logger.LogTrace("Die index {DieIndex} rolled: {RollValue}", i, rolls[i]);
         }
 
         return rolls;
@@ -78,14 +62,8 @@ public class ProvablyFairRngService : IRngService
             {
                 return (int)(min + (randomValue % range));
             }
-            
-            _logger.LogTrace(
-                "Module bias rejection triggered. RandomValue {RandomValue} >= Limit {RemainderLimit}. Trying next 4 bytes.", 
-                randomValue, remainderLimit);
         }
         
-        _logger.LogDebug("Exhausted all 32 bytes without valid range. Re-hashing seed for range [{Min}-{Max}]", min, max);
-
         var newHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
         return ConvertHashToRange(newHash, min, max);
     }

@@ -1,0 +1,11 @@
+﻿{
+  "ServiceUrl": "http://127.0.0.1:8085",
+  "ConnectionString": "",
+  "ReportFolder": "./reports",
+  "Scenarios": [
+    {
+      "Name": "PrepareRoundTest.Realistic",
+      "Enabled": true
+    }
+  ]
+}
