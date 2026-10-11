@@ -1,6 +1,5 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Logging.Abstractions;
 using RngService.Services;
 
 namespace RngService.Tests;
@@ -11,8 +10,7 @@ public class RngServiceNunitTests
     
     public RngServiceNunitTests()
     {
-        var logger = NullLogger<ProvablyFairRngService>.Instance;
-        _rngService = new ProvablyFairRngService(logger);
+        _rngService = new ProvablyFairRngService();
     }
     
     [Fact]
@@ -49,6 +47,20 @@ public class RngServiceNunitTests
 
 
         Assert.Equal(result1, result2);
+    }
+
+    // Pinned outputs, computed by the browser port (gladiator-front/src/utils/provablyFair.ts):
+    // a player's verification only works while both implementations roll the same dice
+    [Theory]
+    [InlineData("a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90", "client-seed-1", "client-seed-2", 1, "p1_action", new[] { 5, 3, 6 })]
+    [InlineData("a3f1c2d4e5b60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90", "client-seed-1", "client-seed-2", 2, "p2_action", new[] { 4, 5, 1 })]
+    [InlineData("0000000000000000000000000000000000000000000000000000000000000000", "abcdefgh", "12345678", 17, "p1_action", new[] { 5, 2, 4 })]
+    public void CalculateDiceRolls_MatchesBrowserImplementation(
+        string serverSeed, string client1Seed, string client2Seed, int nonce, string stepTag, int[] expected)
+    {
+        var rolls = _rngService.CalculateDiceRolls(serverSeed, client1Seed, client2Seed, nonce, stepTag);
+
+        Assert.Equal(expected, rolls);
     }
 
     [Theory]
