@@ -1,6 +1,5 @@
-﻿{
-  "ServiceUrl": "http://127.0.0.1:8085",
-  "ConnectionString": "",
+{
+  "ServiceUrl": "http://127.0.0.1:8080",
   "ReportFolder": "./reports",
   "Scenarios": [
     {

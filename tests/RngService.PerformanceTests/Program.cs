@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
-using CommonResources.PerformanceTests;
 using NBomber.Contracts;
+using RngService.PerformanceTests;
 using NBomber.Contracts.Stats;
 using NBomber.CSharp;
 using RngService.PerformanceTests.Scenarios;

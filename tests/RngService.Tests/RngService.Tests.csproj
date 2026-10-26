@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RngService\RngService.csproj" />
+      <ProjectReference Include="..\..\src\RngService\RngService.csproj" />
     </ItemGroup>
 
 </Project>

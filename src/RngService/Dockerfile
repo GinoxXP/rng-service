@@ -7,10 +7,10 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["RngService/RngService.csproj", "RngService/"]
-RUN dotnet restore "RngService/RngService.csproj"
+COPY ["src/RngService/RngService.csproj", "src/RngService/"]
+RUN dotnet restore "src/RngService/RngService.csproj"
 COPY . .
-WORKDIR "/src/RngService"
+WORKDIR "/src/src/RngService"
 RUN dotnet build "./RngService.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
