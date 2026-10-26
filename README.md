@@ -38,7 +38,8 @@ Empty seeds are rejected with `InvalidArgument`.
 src/RngService/           gRPC service
   Services/ProvablyFairRngService.cs   seed generation, HMAC, rejection sampling
   Services/RngGrpcService.cs           gRPC endpoint, input validation
-tests/RngService.Tests/   xUnit tests
+tests/RngService.Tests/              xUnit tests
+tests/RngService.PerformanceTests/   NBomber load tests over gRPC
 ```
 
 The tests check:
@@ -62,5 +63,25 @@ dotnet run --project src/RngService
 docker build -f src/RngService/Dockerfile -t rng-service .
 docker run -p 8080:8080 rng-service
 ```
+
+## Load testing
+
+Load tests use [NBomber](https://nbomber.com) and drive a running instance over gRPC through a pool of 4 HTTP/2
+channels. The profile ramps up to 800 RPS, holds it for 2 minutes, then goes up to 1000 RPS. Pick the scenarios and
+set the target URL in [`tests.json`](tests/RngService.PerformanceTests/tests.json).
+
+```bash
+dotnet run -c Release --project tests/RngService.PerformanceTests
+```
+
+`RollDice` result, single container on a local dev machine:
+
+| Requests | Failed | Mean    | p50     | p95     | p99     |
+|----------|--------|---------|---------|---------|---------|
+| 153,000  | 0      | 2.87 ms | 2.59 ms | 4.53 ms | 5.98 ms |
+
+HTML reports are written to `./reports`.
+
+## Notes
 
 The service uses HTTP/2 only (gRPC) and logs with Serilog to the console and to rolling JSON files.
